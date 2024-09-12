@@ -19,7 +19,7 @@ public class Login extends AppCompatActivity {
 
 
     private EditText txtUser, txtPass;
-    private Button btnIngresar;
+    private Button btnIngresar, btnRegistrar;
 
     // Predefined credentials
     private static final String USERNAME = "admin";
@@ -31,9 +31,10 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         // Initialize UI elements
-        txtUser = findViewById(R.id.user);
-        txtPass = findViewById(R.id.Pass);
-        btnIngresar = findViewById(R.id.btnIngresar);
+        txtUser = findViewById(R.id.username);
+        txtPass = findViewById(R.id.password);
+        btnIngresar = findViewById(R.id.bL1);
+        btnRegistrar = findViewById(R.id.btnRgr);
 
         // Set up the button click listener
         btnIngresar.setOnClickListener(new View.OnClickListener() {
@@ -42,6 +43,21 @@ public class Login extends AppCompatActivity {
                 verificarCredenciales();
             }
         });
+        btnRegistrar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Mostrar un Toast indicando que el usuario ha sido creado correctamente
+                Toast.makeText(Login.this, "Usuario creado correctamente", Toast.LENGTH_SHORT).show();
+
+                // Redirigir a la pantalla de inicio de sesión
+                Intent intent = new Intent(Login.this, register.class);
+                startActivity(intent);
+
+                // Opcional: Finalizar la actividad actual si no deseas que el usuario regrese a ella
+                finish();
+            }
+        });
+
     }
 
     private void verificarCredenciales() {

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/fondo">
+
+    <EditText
+        android:id="@+id/editTextModalNombre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nombre"
+        android:textColor="#C103035E"
+        android:textColorHint="#C103035E"
+        android:layout_marginBottom="12dp" />
+
+    <EditText
+        android:id="@+id/editTextModalTelefono"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Teléfono"
+        android:textColor="#C103035E"
+        android:textColorHint="#C103035E"
+        android:layout_marginBottom="12dp" />
+
+    <EditText
+        android:id="@+id/editTextModalEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:textColor="#C103035E"
+        android:textColorHint="#C103035E"
+        android:layout_marginBottom="12dp" />
+
+    <EditText
+        android:id="@+id/editTextModalDireccion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Dirección"
+        android:textColor="#C103035E"
+        android:textColorHint="#C103035E"
+        android:layout_marginBottom="12dp" />
+
+    <EditText
+        android:id="@+id/editTextModalFechaNacimiento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Fecha de Nacimiento"
+        android:layout_marginBottom="16dp"
+        android:textColor="#C103035E"
+        android:textColorHint="#C103035E"/>
+
+    <Button
+        android:id="@+id/buttonModificar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#FF5722"
+        android:text="Modificar" />
+
+    <Button
+        android:id="@+id/buttonEliminar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Eliminar"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#E60753"/>
+</LinearLayout>

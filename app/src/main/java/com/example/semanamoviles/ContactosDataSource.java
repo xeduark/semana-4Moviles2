@@ -1,10 +1,12 @@
 package com.example.semanamoviles;
-
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.view.View;
+import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +46,23 @@ public class ContactosDataSource {
         return newContacto;
     }
 
-    public void deleteContacto(Contacto contacto) {
-        long id = contacto.getId();
+    // Método para eliminar contacto
+    public void deleteContacto(long id) {
         database.delete(ContactosDatabaseHelper.TABLE_CONTACTOS,
-                ContactosDatabaseHelper.COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
+                ContactosDatabaseHelper.COLUMN_ID + " = ?",
+                new String[]{String.valueOf(id)});
+    }
+
+    // Eliminar contacto dentro del modal
+    public void setEliminarContactoListener(Button buttonEliminar, final Contacto contacto, final Dialog dialog) {
+        buttonEliminar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteContacto(contacto.getId());  // Elimina el contacto usando el ID
+                dialog.dismiss();  // Cierra el modal
+                // Si es necesario, se debe implementar la lógica de actualización de la lista de contactos aquí
+            }
+        });
     }
 
     public List<Contacto> getAllContactos() {
@@ -122,7 +137,7 @@ public class ContactosDataSource {
         }
 
         return new Contacto(
-                (int) cursor.getLong(idIndex),  // Usar getLong para columnas INTEGER
+                cursor.getLong(idIndex),  // Usar getLong para columnas INTEGER
                 cursor.getString(nombreIndex),
                 cursor.getString(telefonoIndex),
                 cursor.getString(emailIndex),
@@ -130,4 +145,18 @@ public class ContactosDataSource {
                 cursor.getString(fechaNacimientoIndex)
         );
     }
+
+    public void updateContacto(Contacto contacto) {
+        ContentValues values = new ContentValues();
+        values.put(ContactosDatabaseHelper.COLUMN_NOMBRE, contacto.getNombre());
+        values.put(ContactosDatabaseHelper.COLUMN_TELEFONO, contacto.getTelefono());
+        values.put(ContactosDatabaseHelper.COLUMN_EMAIL, contacto.getEmail());
+        values.put(ContactosDatabaseHelper.COLUMN_DIRECCION, contacto.getDireccion());
+        values.put(ContactosDatabaseHelper.COLUMN_FECHA_NACIMIENTO, contacto.getFechaNacimiento());
+
+        database.update(ContactosDatabaseHelper.TABLE_CONTACTOS, values,
+                ContactosDatabaseHelper.COLUMN_ID + " = ?",
+                new String[]{String.valueOf(contacto.getId())});
+    }
 }
+

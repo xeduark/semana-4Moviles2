@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.List;
@@ -84,10 +85,64 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    void mostrarDialogoContacto(final Contacto contacto) {
+        // Inflar el layout del dialogo
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_contacto, null);
+
+        final EditText editTextModalNombre = dialogView.findViewById(R.id.editTextModalNombre);
+        final EditText editTextModalTelefono = dialogView.findViewById(R.id.editTextModalTelefono);
+        final EditText editTextModalEmail = dialogView.findViewById(R.id.editTextModalEmail);
+        final EditText editTextModalDireccion = dialogView.findViewById(R.id.editTextModalDireccion);
+        final EditText editTextModalFechaNacimiento = dialogView.findViewById(R.id.editTextModalFechaNacimiento);
+
+        // Llenar los campos con la información del contacto
+        editTextModalNombre.setText(contacto.getNombre());
+        editTextModalTelefono.setText(contacto.getTelefono());
+        editTextModalEmail.setText(contacto.getEmail());
+        editTextModalDireccion.setText(contacto.getDireccion());
+        editTextModalFechaNacimiento.setText(contacto.getFechaNacimiento());
+
+        // Crear el dialogo
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogView);
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Configurar el botón "Modificar"
+        Button buttonModificar = dialogView.findViewById(R.id.buttonModificar);
+        buttonModificar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Actualizar el contacto en la base de datos
+                contacto.setNombre(editTextModalNombre.getText().toString());
+                contacto.setTelefono(editTextModalTelefono.getText().toString());
+                contacto.setEmail(editTextModalEmail.getText().toString());
+                contacto.setDireccion(editTextModalDireccion.getText().toString());
+                contacto.setFechaNacimiento(editTextModalFechaNacimiento.getText().toString());
+
+                dataSource.updateContacto(contacto);
+                loadContactos(); // Recargar la lista
+                dialog.dismiss(); // Cerrar el diálogo
+            }
+        });
+
+        // Configurar el botón "Eliminar"
+        Button buttonEliminar = dialogView.findViewById(R.id.buttonEliminar);
+        buttonEliminar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataSource.deleteContacto(contacto.getId()); // Eliminar el contacto
+                loadContactos(); // Recargar la lista
+                dialog.dismiss(); // Cerrar el diálogo
+            }
+        });
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         // Close the data source when the activity is destroyed
         dataSource.close();
     }
+
 }
