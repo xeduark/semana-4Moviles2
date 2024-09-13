@@ -12,34 +12,40 @@ import java.util.List;
 
 public class ContactoAdapter extends ArrayAdapter<Contacto> {
 
-    private Context context;
-    private List<Contacto> contactos;
-    private ContactosDataSource dataSource;
+    public interface OnVerClickListener {
+        void onVerClick(Contacto contacto);
+    }
 
-    public ContactoAdapter(Context context, List<Contacto> contactos, ContactosDataSource dataSource) {
-        super(context, R.layout.list_item_contacto, contactos);
-        this.context = context;
-        this.contactos = contactos;
-        this.dataSource = dataSource;
+    private OnVerClickListener verClickListener;
+
+    public ContactoAdapter(Context context, List<Contacto> contactos, OnVerClickListener verClickListener) {
+        super(context, 0, contactos);
+        this.verClickListener = verClickListener;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        // Reutiliza la vista si es posible
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.list_item_contacto, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_contacto, parent, false);
         }
 
-        Contacto contacto = contactos.get(position);
+        // Obtén la instancia del Contacto para esta posición
+        Contacto contacto = getItem(position);
 
+        // Configura los elementos de la vista
         TextView textViewNombre = convertView.findViewById(R.id.textViewNombre);
         Button buttonVer = convertView.findViewById(R.id.buttonVer);
 
         textViewNombre.setText(contacto.getNombre());
 
+        // Configura el botón de ver con un listener
         buttonVer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((MainActivity) context).mostrarDialogoContacto(contacto);
+                if (verClickListener != null) {
+                    verClickListener.onVerClick(contacto);
+                }
             }
         });
 

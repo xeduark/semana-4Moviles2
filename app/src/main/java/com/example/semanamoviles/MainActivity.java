@@ -1,8 +1,10 @@
 package com.example.semanamoviles;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -12,24 +14,23 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.List;
 
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ContactoAdapter.OnVerClickListener {
 
     private ContactosDataSource dataSource;
     private EditText editTextNombre, editTextTelefono, editTextEmail, editTextDireccion, editTextFechaNacimiento;
     private ListView listViewContactos;
-    private ArrayAdapter<Contacto> adapter;
+    private ContactoAdapter adapter; // Adaptador personalizado
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize data source
+        // Inicializa la fuente de datos
         dataSource = new ContactosDataSource(this);
         dataSource.open();
 
-        // Initialize UI elements
+        // Inicializa los elementos de la interfaz de usuario
         editTextNombre = findViewById(R.id.editTextNombre);
         editTextTelefono = findViewById(R.id.editTextTelefono);
         editTextEmail = findViewById(R.id.editTextEmail);
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         editTextFechaNacimiento = findViewById(R.id.editTextFechaNacimiento);
         listViewContactos = findViewById(R.id.listViewContactos);
 
-        // Set up the button click listener
+        // Configura el listener para el botón "Agregar"
         Button buttonAgregar = findViewById(R.id.buttonAgregar);
         buttonAgregar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,37 +47,43 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Load contacts into the ListView
+        // Carga los contactos en el ListView
         loadContactos();
     }
 
+    @Override
+    public void onVerClick(Contacto contacto) {
+        mostrarDialogoContacto(contacto);
+    }
+
     private void agregarContacto() {
+        // Obtiene los datos ingresados por el usuario
         String nombre = editTextNombre.getText().toString().trim();
         String telefono = editTextTelefono.getText().toString().trim();
         String email = editTextEmail.getText().toString().trim();
         String direccion = editTextDireccion.getText().toString().trim();
         String fechaNacimiento = editTextFechaNacimiento.getText().toString().trim();
 
-        // Ensure no fields are empty (optional)
+        // Verifica que no haya campos vacíos (opcional)
         if (nombre.isEmpty() || telefono.isEmpty() || email.isEmpty() || direccion.isEmpty() || fechaNacimiento.isEmpty()) {
-            // Handle the case where one or more fields are empty
+            // Maneja el caso en el que uno o más campos están vacíos
             return;
         }
 
-        // Create a new contact in the database
+        // Crea un nuevo contacto en la base de datos
         dataSource.createContacto(nombre, telefono, email, direccion, fechaNacimiento);
 
-        // Reload contacts to update the ListView
+        // Recarga los contactos para actualizar el ListView
         loadContactos();
     }
 
     private void loadContactos() {
-        // Retrieve all contacts from the database
+        // Obtiene todos los contactos de la base de datos
         List<Contacto> contactos = dataSource.getAllContactos();
 
-        // Create an ArrayAdapter to display the contacts in the ListView
+        // Crea un ContactoAdapter para mostrar los contactos en el ListView
         if (adapter == null) {
-            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, contactos);
+            adapter = new ContactoAdapter(this, contactos, this); // Pasa `this` como el listener
             listViewContactos.setAdapter(adapter);
         } else {
             adapter.clear();
@@ -85,35 +92,36 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void mostrarDialogoContacto(final Contacto contacto) {
-        // Inflar el layout del dialogo
+    private void mostrarDialogoContacto(final Contacto contacto) {
+        // Infla el layout del diálogo
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_contacto, null);
 
+        // Encuentra los EditText del diálogo
         final EditText editTextModalNombre = dialogView.findViewById(R.id.editTextModalNombre);
         final EditText editTextModalTelefono = dialogView.findViewById(R.id.editTextModalTelefono);
         final EditText editTextModalEmail = dialogView.findViewById(R.id.editTextModalEmail);
         final EditText editTextModalDireccion = dialogView.findViewById(R.id.editTextModalDireccion);
         final EditText editTextModalFechaNacimiento = dialogView.findViewById(R.id.editTextModalFechaNacimiento);
 
-        // Llenar los campos con la información del contacto
+        // Llena los campos con la información del contacto
         editTextModalNombre.setText(contacto.getNombre());
         editTextModalTelefono.setText(contacto.getTelefono());
         editTextModalEmail.setText(contacto.getEmail());
         editTextModalDireccion.setText(contacto.getDireccion());
         editTextModalFechaNacimiento.setText(contacto.getFechaNacimiento());
 
-        // Crear el dialogo
+        // Crea el diálogo
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         final AlertDialog dialog = builder.create();
         dialog.show();
 
-        // Configurar el botón "Modificar"
+        // Configura el botón "Modificar"
         Button buttonModificar = dialogView.findViewById(R.id.buttonModificar);
         buttonModificar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Actualizar el contacto en la base de datos
+                // Actualiza el contacto en la base de datos
                 contacto.setNombre(editTextModalNombre.getText().toString());
                 contacto.setTelefono(editTextModalTelefono.getText().toString());
                 contacto.setEmail(editTextModalEmail.getText().toString());
@@ -126,14 +134,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Configurar el botón "Eliminar"
+        // Configura el botón "Eliminar"
         Button buttonEliminar = dialogView.findViewById(R.id.buttonEliminar);
         buttonEliminar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dataSource.deleteContacto(contacto.getId()); // Eliminar el contacto
-                loadContactos(); // Recargar la lista
-                dialog.dismiss(); // Cerrar el diálogo
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Confirmar Eliminación")
+                        .setMessage("¿Estás seguro de que deseas eliminar este contacto?")
+                        .setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dataSource.deleteContacto(contacto.getId()); // Eliminar el contacto
+                                loadContactos(); // Recargar la lista
+                                dialog.dismiss(); // Cerrar el diálogo
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss(); // Solo cierra el diálogo sin eliminar
+                            }
+                        })
+                        .show();
             }
         });
     }
@@ -141,8 +162,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Close the data source when the activity is destroyed
+        // Cierra la fuente de datos cuando la actividad se destruye
         dataSource.close();
     }
-
 }
